@@ -1,0 +1,8 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/.netlify/functions/sso-redirect"
+  status = 200

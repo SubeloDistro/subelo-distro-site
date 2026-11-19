@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logging you in — Subelo Distro</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+<section class="faqhero"><div class="wrap">
+<p class="eyebrow">One moment</p>
+<h1 id="h1">Logging you in<span style="color:var(--deep)">…</span></h1>
+<p class="lead" id="msg">Taking you to your dashboard.</p>
+</div></section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (!session) {
+    document.getElementById("h1").textContent = "Not logged in";
+    document.getElementById("msg").innerHTML = 'Please <a href="/dashboard-login.html">log in</a> first.';
+    return;
+  }
+
+  try {
+    const resp = await fetch("/.netlify/functions/sso-redirect", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + session.access_token },
+    });
+    const body = await resp.json();
+
+    if (!resp.ok) {
+      document.getElementById("h1").textContent = "Something went wrong";
+      document.getElementById("msg").textContent = body.error || "Please try again.";
+      return;
+    }
+
+    window.location.href = body.redirect;
+  } catch (err) {
+    document.getElementById("h1").textContent = "Something went wrong";
+    document.getElementById("msg").textContent = "Could not reach the server. Please try again.";
+  }
+})();
+</script>
+</body>
+</html>
