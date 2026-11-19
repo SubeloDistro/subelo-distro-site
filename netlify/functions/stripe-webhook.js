@@ -19,6 +19,8 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 // shows this once as "Signing secret", starts with whsec_.
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
+const { notifyAdminOfSignup, sendSignupConfirmation } = require("./lib/email");
+
 function verifyStripeSignature(payload, sigHeader, secret) {
   if (!sigHeader) return false;
   const parts = Object.fromEntries(
@@ -54,9 +56,12 @@ async function logSignup(row) {
     if (!resp.ok) {
       const text = await resp.text();
       console.error("Supabase insert failed:", resp.status, text);
+      return false;
     }
+    return true;
   } catch (err) {
     console.error("Could not reach Supabase:", err && err.message, err);
+    return false;
   }
 }
 
@@ -82,15 +87,23 @@ exports.handler = async (event) => {
   if (stripeEvent.type === "checkout.session.completed") {
     const session = stripeEvent.data.object;
     const plan = session.metadata?.plan || "unknown";
+    const email = session.customer_details?.email || session.customer_email;
 
-    await logSignup({
-      email: session.customer_details?.email || session.customer_email,
+    const logged = await logSignup({
+      email,
       plan,
       royalty_pct: 100,
       stripe_customer_id: session.customer,
       stripe_subscription_id: session.subscription,
       status: "pending",
     });
+
+    if (logged && email) {
+      await Promise.all([
+        notifyAdminOfSignup({ email, plan, royaltyPct: 100 }),
+        sendSignupConfirmation({ email, plan }),
+      ]);
+    }
   }
 
   return { statusCode: 200, body: JSON.stringify({ received: true }) };

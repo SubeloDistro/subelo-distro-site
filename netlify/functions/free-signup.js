@@ -14,6 +14,8 @@ const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 // server (Netlify Function), never in the visitor's browser.
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
+const { notifyAdminOfSignup, sendSignupConfirmation } = require("./lib/email");
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type",
@@ -66,6 +68,13 @@ exports.handler = async (event) => {
     console.error("Could not reach Supabase:", err && err.message, err);
     return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not reach Supabase" }) };
   }
+
+  // Fire both emails after the row is safely logged. Failures here are
+  // logged inside the helper and never block the signup response.
+  await Promise.all([
+    notifyAdminOfSignup({ email, plan: "free", royaltyPct: 80 }),
+    sendSignupConfirmation({ email, plan: "free" }),
+  ]);
 
   return {
     statusCode: 200,
