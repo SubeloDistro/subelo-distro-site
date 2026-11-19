@@ -6,7 +6,13 @@
 // Server-side only (Netlify Function), never sent to the browser.
 
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+// Server-side secret key (Project Settings > API Keys > Secret keys in
+// Supabase). Stored in Netlify's environment variables as SUPABASE_SECRET_KEY
+// instead of hardcoded, same reason as the Stripe key: full-access keys
+// shouldn't live in source control. This has full table access regardless of
+// Row Level Security, which is fine here because this code only runs on the
+// server (Netlify Function), never in the visitor's browser.
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -38,8 +44,8 @@ exports.handler = async (event) => {
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/signups`, {
       method: "POST",
       headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        apikey: SUPABASE_SECRET_KEY,
+        Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       },

@@ -8,7 +8,10 @@
 const crypto = require("crypto");
 
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+// Server-side secret key (Project Settings > API Keys > Secret keys in
+// Supabase), stored in Netlify's environment variables as SUPABASE_SECRET_KEY.
+// Safe here because this code only runs server-side (Netlify Function).
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 // Set in Netlify's environment variables (Site settings > Environment
 // variables > STRIPE_WEBHOOK_SECRET) after creating the webhook endpoint
@@ -41,8 +44,8 @@ async function logSignup(row) {
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/signups`, {
       method: "POST",
       headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        apikey: SUPABASE_SECRET_KEY,
+        Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       },
