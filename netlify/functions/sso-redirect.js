@@ -13,7 +13,9 @@
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
 const SONOSUITE_SSO_SECRET = "QrRpnQQPgzBY8_mZEDwrFvQAgPTnhAUxWjhD3Tb2FzNhyIHSaQDgFmY_UkECfRnJ";
-const SONOSUITE_SUBDOMAIN = "sablatino";
+// This is the vanity domain (CNAME'd to platform.sonosuite.com) so artists
+// never see "sablatino" or "sonosuite.com" anywhere in the URL.
+const SONOSUITE_DASHBOARD_DOMAIN = "distribution.subelodistro.com";
 
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -76,7 +78,7 @@ exports.handler = async (event) => {
   const token = jwt.sign(payload, SONOSUITE_SSO_SECRET, { algorithm: "HS256" });
 
   const returnTo = event.queryStringParameters && event.queryStringParameters.return_to;
-  let redirectUrl = `https://${SONOSUITE_SUBDOMAIN}.sonosuite.com/albums?jwt=${encodeURIComponent(token)}`;
+  let redirectUrl = `https://${SONOSUITE_DASHBOARD_DOMAIN}/albums?jwt=${encodeURIComponent(token)}`;
   if (returnTo) {
     redirectUrl += `&return_to=${encodeURIComponent(returnTo)}`;
   }
