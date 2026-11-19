@@ -37,16 +37,24 @@ function verifyStripeSignature(payload, sigHeader, secret) {
 }
 
 async function logSignup(row) {
-  await fetch(`${SUPABASE_URL}/rest/v1/signups`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify(row),
-  });
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/signups`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(row),
+    });
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error("Supabase insert failed:", resp.status, text);
+    }
+  } catch (err) {
+    console.error("Could not reach Supabase:", err && err.message, err);
+  }
 }
 
 exports.handler = async (event) => {

@@ -75,6 +75,7 @@ exports.handler = async (event) => {
     const session = await resp.json();
 
     if (!resp.ok) {
+      console.error("Stripe checkout session creation failed:", resp.status, JSON.stringify(session));
       return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: session.error?.message || "Stripe error" }) };
     }
 
@@ -84,6 +85,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ url: session.url }),
     };
   } catch (err) {
+    console.error("Could not reach Stripe:", err && err.message, err);
     return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not reach Stripe" }) };
   }
 };

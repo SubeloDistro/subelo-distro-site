@@ -53,9 +53,11 @@ exports.handler = async (event) => {
 
     if (!resp.ok) {
       const text = await resp.text();
+      console.error("Supabase insert failed:", resp.status, text);
       return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not log signup", detail: text }) };
     }
-  } catch {
+  } catch (err) {
+    console.error("Could not reach Supabase:", err && err.message, err);
     return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not reach Supabase" }) };
   }
 
