@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose your plan — Subelo Distro</title>
+<meta name="description" content="Pick a plan to create your Subelo Distro account. Free keeps 80% of your royalties. Solo, Plus and Label keep 100%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+.emailbar{max-width:520px;margin:0 auto 54px}
+.emailbar .field input{text-align:center}
+.emailbar .authmsg{text-align:center}
+.plan .pill[disabled]{opacity:.5;cursor:default}
+.plan .pill.loading{opacity:.7;cursor:wait}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<a class="logo" href="/" aria-label="Subelo Distro home">
+<svg viewBox="0 0 90 34" aria-hidden="true"><g fill="#5fb1fb"><rect x="0" y="14" width="2" height="6"/><rect x="5" y="8" width="2" height="18"/><rect x="10" y="3" width="2" height="28"/><rect x="15" y="9" width="2" height="16"/><rect x="20" y="1" width="2" height="32"/><rect x="25" y="7" width="2" height="20"/><rect x="30" y="12" width="2" height="10"/><rect x="35" y="5" width="2" height="24"/><rect x="40" y="13" width="2" height="8"/><rect x="45" y="10" width="2" height="14"/><rect x="50" y="15" width="2" height="4"/><rect x="55" y="12" width="2" height="10"/><rect x="60" y="15" width="2" height="4"/><rect x="65" y="13" width="2" height="8"/><rect x="70" y="15" width="2" height="4"/><rect x="75" y="14" width="2" height="6"/></g></svg>
+<span>SUB<em>ELO</em></span><small>DISTRO</small></a>
+<nav class="main"><a href="/how-it-works.html">How it works</a><a href="/pricing.html">Pricing</a><a href="/faq.html">FAQ</a></nav>
+<div class="acts"><a class="pill sm" href="https://distribution.subelodistro.com/">Log in</a></div>
+</div></header>
+<main>
+<section class="page-top"><div class="wrap">
+<p class="eyebrow">Create your account</p>
+<h1>Pick a<br><span style="color:var(--deep)">plan.</span></h1>
+<p class="lead" style="margin:28px auto 0;max-width:640px;text-align:center">Enter your email once, then choose the plan you want. Free accounts skip payment entirely. Paid plans go to a secure Stripe checkout.</p>
+
+<div class="emailbar" style="margin-top:46px">
+<div class="field">
+<label for="email">Your email</label>
+<input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+</div>
+<p id="msg" class="authmsg"></p>
+</div>
+
+<div class="plans">
+<div class="plan"><h3>Free</h3><div class="price">$0 <small>forever</small></div><p class="sub">Try it. Put your first songs out for nothing.</p><p class="pct"><b>80%</b>of your royalties are yours</p>
+<ul><li>1 artist name</li><li>Unlimited releases</li><li>250+ stores</li><li>Standard support</li></ul>
+<button class="pill blue" data-plan="free">Create my account</button></div>
+
+<div class="plan"><h3>Solo</h3><div class="price">$21.99 <small>/year</small></div><p class="sub">One artist, unlimited releases, all your royalties.</p><p class="pct"><b>100%</b>of your royalties are yours</p>
+<ul><li>1 artist name</li><li>Unlimited releases</li><li>Standard support</li></ul>
+<button class="pill" data-plan="solo">Choose Solo</button></div>
+
+<div class="plan hot"><span class="tag">Most flexible</span><h3>Plus</h3><div class="price">$39.99 <small>/year</small></div><p class="sub">Your own label name, codes and release controls.</p><p class="pct"><b>100%</b>of your royalties are yours</p>
+<ul><li>5 artist or band names</li><li>Priority review</li><li>1-business-day support</li></ul>
+<button class="pill blue" data-plan="plus">Choose Plus</button></div>
+
+<div class="plan"><h3>Label</h3><div class="price">$79.99 <small>/year</small></div><p class="sub">For crews, managers and small labels.</p><p class="pct"><b>100%</b>of your royalties are yours</p>
+<ul><li>Unlimited artist names</li><li>Priority support</li></ul>
+<button class="pill" data-plan="label">Choose Label</button></div>
+</div>
+
+</div></section>
+</main>
+<footer><div class="wrap">
+<div class="legal"><span>© 2026 Subelo Distro</span><span>Prices in USD, billed yearly.</span></div>
+</div></footer>
+
+<script>
+const FUNCTIONS_BASE = "https://subelo-distro-site.netlify.app/.netlify/functions";
+
+const emailInput = document.getElementById("email");
+const msg = document.getElementById("msg");
+const buttons = document.querySelectorAll(".plan button[data-plan]");
+
+// Preselect/highlight a plan if the link carried one, e.g. join.html?plan=plus
+const params = new URLSearchParams(location.search);
+const preselect = params.get("plan");
+if (preselect) {
+  const btn = document.querySelector(`button[data-plan="${preselect}"]`);
+  if (btn) btn.closest(".plan").style.outline = "3px solid var(--deep)";
+}
+
+function setMsg(text, isErr) {
+  msg.textContent = text;
+  msg.className = "authmsg " + (isErr ? "err" : "ok");
+}
+
+function validEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+buttons.forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    if (!validEmail(email)) {
+      setMsg("Enter a valid email first.", true);
+      emailInput.focus();
+      return;
+    }
+
+    const plan = btn.dataset.plan;
+    buttons.forEach((b) => (b.disabled = true));
+    btn.classList.add("loading");
+    setMsg("Working on it...", false);
+
+    try {
+      if (plan === "free") {
+        const resp = await fetch(`${FUNCTIONS_BASE}/free-signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Something went wrong");
+        location.href = `/join-success.html?plan=free`;
+      } else {
+        const resp = await fetch(`${FUNCTIONS_BASE}/create-checkout-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, plan }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Something went wrong");
+        location.href = data.url;
+      }
+    } catch (err) {
+      setMsg(err.message || "Something went wrong. Try again.", true);
+      buttons.forEach((b) => (b.disabled = false));
+      btn.classList.remove("loading");
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elige tu plan — Subelo Distro</title>
+<meta name="description" content="Elige un plan para crear tu cuenta de Subelo Distro. Gratis conserva el 80% de tus regalías. Solo, Plus y Label conservan el 100%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+.emailbar{max-width:520px;margin:0 auto 54px}
+.emailbar .field input{text-align:center}
+.emailbar .authmsg{text-align:center}
+.plan .pill[disabled]{opacity:.5;cursor:default}
+.plan .pill.loading{opacity:.7;cursor:wait}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<a class="logo" href="/es/" aria-label="Subelo Distro inicio">
+<svg viewBox="0 0 90 34" aria-hidden="true"><g fill="#5fb1fb"><rect x="0" y="14" width="2" height="6"/><rect x="5" y="8" width="2" height="18"/><rect x="10" y="3" width="2" height="28"/><rect x="15" y="9" width="2" height="16"/><rect x="20" y="1" width="2" height="32"/><rect x="25" y="7" width="2" height="20"/><rect x="30" y="12" width="2" height="10"/><rect x="35" y="5" width="2" height="24"/><rect x="40" y="13" width="2" height="8"/><rect x="45" y="10" width="2" height="14"/><rect x="50" y="15" width="2" height="4"/><rect x="55" y="12" width="2" height="10"/><rect x="60" y="15" width="2" height="4"/><rect x="65" y="13" width="2" height="8"/><rect x="70" y="15" width="2" height="4"/><rect x="75" y="14" width="2" height="6"/></g></svg>
+<span>SUB<em>ELO</em></span><small>DISTRO</small></a>
+<nav class="main"><a href="/es/how-it-works.html">Cómo funciona</a><a href="/es/pricing.html">Precios</a><a href="/es/faq.html">Preguntas</a></nav>
+<div class="acts"><a class="pill sm" href="https://distribution.subelodistro.com/">Iniciar sesión</a></div>
+</div></header>
+<main>
+<section class="page-top"><div class="wrap">
+<p class="eyebrow">Crea tu cuenta</p>
+<h1>Elige un<br><span style="color:var(--deep)">plan.</span></h1>
+<p class="lead" style="margin:28px auto 0;max-width:640px;text-align:center">Escribe tu correo una vez y elige el plan que quieras. Las cuentas gratuitas no requieren pago. Los planes de pago van a un checkout seguro de Stripe.</p>
+
+<div class="emailbar" style="margin-top:46px">
+<div class="field">
+<label for="email">Tu correo</label>
+<input id="email" type="email" placeholder="tu@ejemplo.com" autocomplete="email">
+</div>
+<p id="msg" class="authmsg"></p>
+</div>
+
+<div class="plans">
+<div class="plan"><h3>Gratis</h3><div class="price">$0 <small>para siempre</small></div><p class="sub">Pruébalo. Lanza tus primeras canciones sin costo.</p><p class="pct"><b>80%</b>de tus regalías son tuyas</p>
+<ul><li>1 nombre de artista</li><li>Lanzamientos ilimitados</li><li>250+ tiendas</li><li>Soporte estándar</li></ul>
+<button class="pill blue" data-plan="free">Crear mi cuenta</button></div>
+
+<div class="plan"><h3>Solo</h3><div class="price">$21.99 <small>/año</small></div><p class="sub">Un artista, lanzamientos ilimitados, todas tus regalías.</p><p class="pct"><b>100%</b>de tus regalías son tuyas</p>
+<ul><li>1 nombre de artista</li><li>Lanzamientos ilimitados</li><li>Soporte estándar</li></ul>
+<button class="pill" data-plan="solo">Elegir Solo</button></div>
+
+<div class="plan hot"><span class="tag">Más flexible</span><h3>Plus</h3><div class="price">$39.99 <small>/año</small></div><p class="sub">Tu propio nombre de sello, códigos y control de lanzamientos.</p><p class="pct"><b>100%</b>de tus regalías son tuyas</p>
+<ul><li>5 nombres de artista o banda</li><li>Revisión prioritaria</li><li>Soporte en 1 día hábil</li></ul>
+<button class="pill blue" data-plan="plus">Elegir Plus</button></div>
+
+<div class="plan"><h3>Label</h3><div class="price">$79.99 <small>/año</small></div><p class="sub">Para equipos, mánagers y sellos pequeños.</p><p class="pct"><b>100%</b>de tus regalías son tuyas</p>
+<ul><li>Nombres de artista ilimitados</li><li>Soporte prioritario</li></ul>
+<button class="pill" data-plan="label">Elegir Label</button></div>
+</div>
+
+</div></section>
+</main>
+<footer><div class="wrap">
+<div class="legal"><span>© 2026 Subelo Distro</span><span>Precios en USD, facturados anualmente.</span></div>
+</div></footer>
+
+<script>
+const FUNCTIONS_BASE = "https://subelo-distro-site.netlify.app/.netlify/functions";
+
+const emailInput = document.getElementById("email");
+const msg = document.getElementById("msg");
+const buttons = document.querySelectorAll(".plan button[data-plan]");
+
+const params = new URLSearchParams(location.search);
+const preselect = params.get("plan");
+if (preselect) {
+  const btn = document.querySelector(`button[data-plan="${preselect}"]`);
+  if (btn) btn.closest(".plan").style.outline = "3px solid var(--deep)";
+}
+
+function setMsg(text, isErr) {
+  msg.textContent = text;
+  msg.className = "authmsg " + (isErr ? "err" : "ok");
+}
+
+function validEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+buttons.forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    if (!validEmail(email)) {
+      setMsg("Escribe un correo válido primero.", true);
+      emailInput.focus();
+      return;
+    }
+
+    const plan = btn.dataset.plan;
+    buttons.forEach((b) => (b.disabled = true));
+    btn.classList.add("loading");
+    setMsg("Procesando...", false);
+
+    try {
+      if (plan === "free") {
+        const resp = await fetch(`${FUNCTIONS_BASE}/free-signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Algo salió mal");
+        location.href = `/es/join-success.html?plan=free`;
+      } else {
+        const resp = await fetch(`${FUNCTIONS_BASE}/create-checkout-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, plan }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Algo salió mal");
+        location.href = data.url;
+      }
+    } catch (err) {
+      setMsg(err.message || "Algo salió mal. Intenta de nuevo.", true);
+      buttons.forEach((b) => (b.disabled = false));
+      btn.classList.remove("loading");
+    }
+  });
+});
+</script>
+</body>
+</html>
