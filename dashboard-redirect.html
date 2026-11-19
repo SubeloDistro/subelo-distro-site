@@ -23,6 +23,8 @@
 <script>
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+// This is the separate function-hosting site's address (filled in once it's created).
+const FUNCTION_BASE_URL = "SSO_FUNCTION_SITE_PLACEHOLDER";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 (async () => {
@@ -35,7 +37,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
   try {
-    const resp = await fetch("/.netlify/functions/sso-redirect", {
+    const resp = await fetch(FUNCTION_BASE_URL + "/.netlify/functions/sso-redirect", {
       method: "POST",
       headers: { Authorization: "Bearer " + session.access_token },
     });
