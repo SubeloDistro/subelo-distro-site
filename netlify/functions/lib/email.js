@@ -13,11 +13,6 @@ const FROM_ADDRESS = "Subelo Distro <notifications@mail.subelodistro.com>";
 // in Netlify if this should point somewhere else.
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@subelodistro.com";
 
-// Served as a static file from this same Netlify site (netlify.toml
-// publishes the whole repo root), so it's reachable regardless of which
-// domain is pointed at the customer-facing marketing pages.
-const LOGO_URL = "https://subelo-distro-site.netlify.app/assets/email-logo.png";
-
 // Brand colors, matching styles.css on the main site.
 const COLORS = {
   bg: "#f4f7fc",
@@ -41,8 +36,13 @@ function renderEmail({ preheader, bodyHtml }) {
         <td align="center">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid ${COLORS.line};border-radius:16px;overflow:hidden;">
             <tr>
-              <td style="padding:28px 36px 20px 36px;text-align:center;border-bottom:1px solid ${COLORS.line};">
-                <img src="${LOGO_URL}" width="120" height="120" alt="Subelo Distro" style="display:inline-block;width:120px;height:120px;" />
+              <td style="padding:32px 36px 20px 36px;text-align:center;border-bottom:1px solid ${COLORS.line};">
+                <div style="font-size:26px;font-weight:700;letter-spacing:.01em;color:${COLORS.ink};">
+                  SUB<span style="color:${COLORS.blue};">ELO</span>
+                </div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.22em;color:${COLORS.muted};margin-top:2px;">
+                  DISTRO
+                </div>
               </td>
             </tr>
             <tr>
