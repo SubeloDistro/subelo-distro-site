@@ -29,7 +29,7 @@ async function generateLink(type, email) {
     body: JSON.stringify({
       type,
       email,
-      options: { redirect_to: SET_PASSWORD_REDIRECT },
+      redirect_to: SET_PASSWORD_REDIRECT,
     }),
   });
   const data = await resp.json().catch(() => null);
