@@ -62,8 +62,17 @@ exports.handler = async (event) => {
 
     if (!resp.ok) {
       const text = await resp.text();
-      console.error("Supabase insert failed:", resp.status, text);
-      return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not log signup", detail: text }) };
+      // A duplicate-email signup (they lost their set-password email and
+      // tried again, or just signed up twice) is not a real failure --
+      // don't show them a broken "signup failed" page for it. Postgres
+      // reports this as a 409 with a "duplicate key" message. Any other
+      // failure is still a real error.
+      const isDuplicate = resp.status === 409 || /duplicate key/i.test(text);
+      if (!isDuplicate) {
+        console.error("Supabase insert failed:", resp.status, text);
+        return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not log signup", detail: text }) };
+      }
+      console.log(`Duplicate free signup for ${email} -- resending their account setup link instead of logging a new row.`);
     }
   } catch (err) {
     console.error("Could not reach Supabase:", err && err.message, err);

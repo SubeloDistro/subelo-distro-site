@@ -57,7 +57,18 @@ async function logSignup(row) {
     });
     if (!resp.ok) {
       const text = await resp.text();
-      console.error("Supabase insert failed:", resp.status, text);
+      // Stripe can and does redeliver the same webhook event more than
+      // once. A duplicate-email insert here most likely means we already
+      // logged this exact signup -- treat it as already-handled (no
+      // error), but still skip re-sending the admin/signee emails below,
+      // since this is almost certainly a retried delivery of something
+      // that already emailed them once, not a brand new signup.
+      const isDuplicate = resp.status === 409 || /duplicate key/i.test(text);
+      if (!isDuplicate) {
+        console.error("Supabase insert failed:", resp.status, text);
+        return false;
+      }
+      console.log(`Duplicate signup row for ${row.email} -- likely a retried Stripe webhook delivery. Not re-sending emails.`);
       return false;
     }
     return true;
