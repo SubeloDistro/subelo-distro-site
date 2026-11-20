@@ -114,7 +114,7 @@ async function notifyAdminOfSignup({ email, plan, royaltyPct }) {
             <td style="padding:10px 0;text-align:right;font-weight:600;">${royaltyPct}%</td>
           </tr>
         </table>
-        <p style="margin:0;color:${COLORS.muted};font-size:15px;">Check Supabase for the full record, then create their Sonosuite account.</p>
+        <p style="margin:0;color:${COLORS.muted};font-size:15px;">Their Sonosuite account gets created automatically the first time they log in. Once it shows up, set their royalty % and pricing plan on Sonosuite to match above.</p>
       `,
     }),
   });
