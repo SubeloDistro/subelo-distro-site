@@ -12,7 +12,10 @@
 // the browser, so this is safe (just don't post this file's contents anywhere public).
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
-const SONOSUITE_SSO_SECRET = "QrRpnQQPgzBY8_mZEDwrFvQAgPTnhAUxWjhD3Tb2FzNhyIHSaQDgFmY_UkECfRnJ";
+// This is the real secret from Sonosuite's own Setup > 3rd Party > SSO page
+// (distribution.subelodistro.com), not the stale one the old developer left
+// hardcoded here. SSO is "Activated" there as of 2026-11-20.
+const SONOSUITE_SSO_SECRET = "13dd6bb58478fcec5e507e643b13d33896dc992ddbaa4dfa9edddc19b15cb035";
 // This is the vanity domain (CNAME'd to platform.sonosuite.com) so artists
 // never see "sablatino" or "sonosuite.com" anywhere in the URL.
 const SONOSUITE_DASHBOARD_DOMAIN = "distribution.subelodistro.com";
@@ -77,11 +80,11 @@ exports.handler = async (event) => {
 
   const token = jwt.sign(payload, SONOSUITE_SSO_SECRET, { algorithm: "HS256" });
 
-  const returnTo = event.queryStringParameters && event.queryStringParameters.return_to;
-  let redirectUrl = `https://${SONOSUITE_DASHBOARD_DOMAIN}/albums?jwt=${encodeURIComponent(token)}`;
-  if (returnTo) {
-    redirectUrl += `&return_to=${encodeURIComponent(returnTo)}`;
-  }
+  // Sonosuite sends people to /sonosuite/login with a "next" telling us
+  // which page they were trying to reach (e.g. next=%2Falbums). Honor it
+  // when present, otherwise just land them on the releases list.
+  const nextPath = (event.queryStringParameters && event.queryStringParameters.next) || "/albums";
+  const redirectUrl = `https://${SONOSUITE_DASHBOARD_DOMAIN}${nextPath}?jwt=${encodeURIComponent(token)}`;
 
   return {
     statusCode: 200,

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logged out — Subelo Distro</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+<section class="faqhero"><div class="wrap">
+<p class="eyebrow">Signed out</p>
+<h1>You've been <span style="color:var(--deep)">logged out.</span></h1>
+<p class="lead"><a href="/dashboard-login.html">Log back in</a></p>
+</div></section>
+</main>
+
+<script>
+// Sonosuite sends people here (its SSO "Logout Url to redirect") when they
+// log out on their side -- so log them out of Subelo Distro too, rather
+// than leaving a stale Supabase session sitting around.
+const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+sb.auth.signOut();
+</script>
+</body>
+</html>

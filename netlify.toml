@@ -6,3 +6,16 @@
   from = "/dashboard"
   to = "/.netlify/functions/sso-redirect"
   status = 200
+
+# Sonosuite's own SSO settings (Setup > 3rd Party > SSO) point here --
+# Sonosuite sends a browser to these exact paths, so they have to resolve
+# without the .html extension.
+[[redirects]]
+  from = "/sonosuite/login"
+  to = "/sonosuite-login.html"
+  status = 200
+
+[[redirects]]
+  from = "/sonosuite/logout"
+  to = "/sonosuite-logout.html"
+  status = 200
