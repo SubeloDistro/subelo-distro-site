@@ -113,7 +113,8 @@ footer .about{font-size:22px;margin:30px 0 0;max-width:460px}
 footer .legal{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:60px;color:var(--muted);font-size:20px}
 :focus-visible{outline:3px solid var(--deep);outline-offset:3px}
 @media(max-width:1000px){.plans{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr}.dark .wrap,.genre .wrap,.hero .wrap{grid-template-columns:1fr}footer .cols{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){body{font-size:17px}section{padding:72px 0}nav.main{display:none}header .wrap{grid-template-columns:1fr auto}.plans{grid-template-columns:1fr}.pill{padding:11px 18px;font-size:16px}.logo{font-size:24px}.final .box{padding:40px 28px;border-radius:32px}.final .pill{padding:16px 26px;font-size:20px}.mock{display:none}}
+@media(max-width:700px){body{font-size:17px}section{padding:72px 0}nav.main{display:none}header .wrap{grid-template-columns:1fr auto}.plans{grid-template-columns:1fr}.pill{padding:11px 18px;font-size:16px}.logo{font-size:24px}.logo svg,.logo img{height:26px}.acts{gap:8px}.acts .pill.sm{padding:9px 14px;font-size:14px}.acts .langsw{padding:5px 9px;font-size:12px}.final .box{padding:40px 28px;border-radius:32px}.final .pill{padding:16px 26px;font-size:20px}.mock{display:none}}
+@media(max-width:380px){.acts .langsw{display:none}}
 .page-top{padding-top:30px}
 
 .vs .wrap{display:block}
