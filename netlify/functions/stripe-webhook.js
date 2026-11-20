@@ -19,8 +19,9 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 // shows this once as "Signing secret", starts with whsec_.
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
-const { notifyAdminOfSignup, sendSignupConfirmation } = require("./lib/email");
+const { notifyAdminOfSignup, notifyAdminOfSubscriptionChange, sendSignupConfirmation } = require("./lib/email");
 const { createAccountSetupLink } = require("./lib/account");
+const { updateSignupBySubscriptionId } = require("./lib/signups");
 
 function verifyStripeSignature(payload, sigHeader, secret) {
   if (!sigHeader) return false;
@@ -105,6 +106,32 @@ exports.handler = async (event) => {
         notifyAdminOfSignup({ email, plan, royaltyPct: 100 }),
         sendSignupConfirmation({ email, plan, setupLink }),
       ]);
+    }
+  } else if (stripeEvent.type === "customer.subscription.deleted") {
+    // Subscription fully ended (cancelled, or cancelled after all retries
+    // failed). Stripe has no more say over their access at this point --
+    // Sonosuite still needs manual action, so just flag it for the admin.
+    const sub = stripeEvent.data.object;
+    const rows = await updateSignupBySubscriptionId(sub.id, { status: "cancelled" });
+    const row = rows && rows[0];
+    if (row) {
+      await notifyAdminOfSubscriptionChange({ email: row.email, plan: row.plan, event: "cancelled" });
+    }
+  } else if (stripeEvent.type === "customer.subscription.updated") {
+    // Fires on lots of things (plan changes, Stripe's own retry-state
+    // bookkeeping, etc.) -- we only care about renewal payments failing or
+    // recovering.
+    const sub = stripeEvent.data.object;
+    if (sub.status === "past_due" || sub.status === "unpaid") {
+      const rows = await updateSignupBySubscriptionId(sub.id, { status: "payment_failed" });
+      const row = rows && rows[0];
+      if (row) {
+        await notifyAdminOfSubscriptionChange({ email: row.email, plan: row.plan, event: "payment_failed" });
+      }
+    } else if (sub.status === "active") {
+      // Recovered from a failed payment. Never touches a row the admin
+      // (or the cancellation handler above) already moved to "cancelled".
+      await updateSignupBySubscriptionId(sub.id, { status: "active" }, "&status=neq.cancelled");
     }
   }
 

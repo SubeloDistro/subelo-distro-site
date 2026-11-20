@@ -12,6 +12,10 @@
 // the browser, so this is safe (just don't post this file's contents anywhere public).
 const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_JDbHyrpzq9Ya61LoG9mYJw_GJNNLhcI";
+// Server-side secret key, same one free-signup.js and stripe-webhook.js use
+// (Netlify env var SUPABASE_SECRET_KEY). Needed here to update the signups
+// table, which the anon key above can't write to.
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 // This is the real secret from Sonosuite's own Setup > 3rd Party > SSO page
 // (distribution.subelodistro.com), not the stale one the old developer left
 // hardcoded here. SSO is "Activated" there as of 2026-11-20.
@@ -31,6 +35,30 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Authorization, Content-Type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+// Only touches rows still sitting at "pending" -- never overwrites a status
+// an admin or another process already moved on (e.g. "cancelled").
+async function markSignupActive(email) {
+  if (!SUPABASE_SECRET_KEY) {
+    console.error("SUPABASE_SECRET_KEY not set -- skipping signup status update");
+    return;
+  }
+  const url = `${SUPABASE_URL}/rest/v1/signups?email=eq.${encodeURIComponent(email)}&status=eq.pending`;
+  const resp = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      apikey: SUPABASE_SECRET_KEY,
+      Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({ status: "active" }),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Supabase PATCH failed: ${resp.status} ${text}`);
+  }
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -65,6 +93,19 @@ exports.handler = async (event) => {
 
   if (!user || !user.email || !user.id) {
     return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: "Session did not return a valid user" }) };
+  }
+
+  // They've made it this far, meaning they logged in and Sonosuite SSO is
+  // about to hand them an account (or already did). Flip their signups row
+  // from "pending" to "active" so the admin can see at a glance who's
+  // actually gotten in versus who's still waiting on a password. Awaited
+  // (serverless functions can get frozen/killed right after returning a
+  // response, so a fire-and-forget call here could just never run) but
+  // never allowed to fail or slow down the actual handoff.
+  try {
+    await markSignupActive(user.email);
+  } catch (err) {
+    console.error("Could not mark signup active:", err && err.message, err);
   }
 
   const now = Math.floor(Date.now() / 1000);

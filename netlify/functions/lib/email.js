@@ -120,6 +120,41 @@ async function notifyAdminOfSignup({ email, plan, royaltyPct }) {
   });
 }
 
+// event: "cancelled" | "payment_failed" -- fired from stripe-webhook.js when
+// a paid subscription ends or a renewal charge fails, so you know to go pull
+// their access/royalty split back down on Sonosuite (Stripe doesn't tell
+// Sonosuite anything -- that side is always manual).
+async function notifyAdminOfSubscriptionChange({ email, plan, event }) {
+  const label = planLabel(plan);
+  const isCancelled = event === "cancelled";
+  const heading = isCancelled ? "Subscription cancelled" : "Payment failed";
+  const action = isCancelled
+    ? "Their Stripe subscription has ended. Consider pulling their Sonosuite account back to 0% / blocked until they resubscribe."
+    : "Stripe couldn't collect their renewal payment. Stripe will keep retrying automatically -- no action needed yet unless it later shows as cancelled.";
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `${heading} -- ${email}`,
+    html: renderEmail({
+      preheader: `${heading}: ${email}`,
+      bodyHtml: `
+        <p style="margin:0 0 18px 0;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${COLORS.blue};">${heading}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;">
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid ${COLORS.line};color:${COLORS.muted};font-size:14px;">Email</td>
+            <td style="padding:10px 0;border-bottom:1px solid ${COLORS.line};text-align:right;font-weight:600;">${email}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0;color:${COLORS.muted};font-size:14px;">Plan</td>
+            <td style="padding:10px 0;text-align:right;font-weight:600;">${label}</td>
+          </tr>
+        </table>
+        <p style="margin:0;color:${COLORS.muted};font-size:15px;">${action}</p>
+      `,
+    }),
+  });
+}
+
 async function sendSignupConfirmation({ email, plan, setupLink }) {
   const label = planLabel(plan);
   const setupBlock = setupLink
@@ -146,4 +181,4 @@ async function sendSignupConfirmation({ email, plan, setupLink }) {
   });
 }
 
-module.exports = { notifyAdminOfSignup, sendSignupConfirmation };
+module.exports = { notifyAdminOfSignup, notifyAdminOfSubscriptionChange, sendSignupConfirmation };
