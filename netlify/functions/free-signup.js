@@ -15,6 +15,7 @@ const SUPABASE_URL = "https://mavxlbtbczebeydfcael.supabase.co";
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 const { notifyAdminOfSignup, sendSignupConfirmation } = require("./lib/email");
+const { createAccountSetupLink } = require("./lib/account");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -69,11 +70,15 @@ exports.handler = async (event) => {
     return { statusCode: 502, headers: CORS_HEADERS, body: JSON.stringify({ error: "Could not reach Supabase" }) };
   }
 
+  // Create their real login account and get a one-time set-password link.
+  // Failure here is logged inside the helper and never blocks the signup.
+  const setupLink = await createAccountSetupLink(email);
+
   // Fire both emails after the row is safely logged. Failures here are
   // logged inside the helper and never block the signup response.
   await Promise.all([
     notifyAdminOfSignup({ email, plan: "free", royaltyPct: 80 }),
-    sendSignupConfirmation({ email, plan: "free" }),
+    sendSignupConfirmation({ email, plan: "free", setupLink }),
   ]);
 
   return {

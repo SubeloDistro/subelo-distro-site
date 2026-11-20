@@ -20,6 +20,7 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 const { notifyAdminOfSignup, sendSignupConfirmation } = require("./lib/email");
+const { createAccountSetupLink } = require("./lib/account");
 
 function verifyStripeSignature(payload, sigHeader, secret) {
   if (!sigHeader) return false;
@@ -99,9 +100,10 @@ exports.handler = async (event) => {
     });
 
     if (logged && email) {
+      const setupLink = await createAccountSetupLink(email);
       await Promise.all([
         notifyAdminOfSignup({ email, plan, royaltyPct: 100 }),
-        sendSignupConfirmation({ email, plan }),
+        sendSignupConfirmation({ email, plan, setupLink }),
       ]);
     }
   }

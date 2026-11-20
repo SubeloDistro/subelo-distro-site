@@ -120,8 +120,17 @@ async function notifyAdminOfSignup({ email, plan, royaltyPct }) {
   });
 }
 
-async function sendSignupConfirmation({ email, plan }) {
+async function sendSignupConfirmation({ email, plan, setupLink }) {
   const label = planLabel(plan);
+  const setupBlock = setupLink
+    ? `
+        <div style="text-align:center;margin:0 0 24px 0;">
+          <a href="${setupLink}" style="display:inline-block;background:${COLORS.blue};color:${COLORS.ink};font-weight:700;font-size:15px;text-decoration:none;padding:14px 28px;border-radius:999px;">Set your password</a>
+        </div>
+        <p style="margin:0 0 24px 0;color:${COLORS.muted};font-size:13px;">That link is one-time and expires soon. Once you set a password you can log in any time from the "Log in" button on the site.</p>
+      `
+    : `<p style="margin:0 0 24px 0;">We're setting up your account now -- you'll hear from us shortly with your login details.</p>`;
+
   await sendEmail({
     to: email,
     subject: "You're signed up with Subelo Distro",
@@ -130,7 +139,7 @@ async function sendSignupConfirmation({ email, plan }) {
       bodyHtml: `
         <p style="margin:0 0 16px 0;font-size:19px;font-weight:700;">You're in.</p>
         <p style="margin:0 0 16px 0;">Thanks for signing up for the <strong>${label}</strong> plan with Subelo Distro.</p>
-        <p style="margin:0 0 24px 0;">We're setting up your account now -- you'll hear from us shortly with your login details.</p>
+        ${setupBlock}
         <p style="margin:0;color:${COLORS.muted};">-- Subelo Distro</p>
       `,
     }),
